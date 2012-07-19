@@ -196,7 +196,7 @@ SUBARCH := arm
 export KBUILD_BUILDHOST := $(SUBARCH)
 ARCH		?= $(SUBARCH)
 #CROSS_COMPILE	?= /usr/bin/arm-2010q1/bin/arm-none-linux-gnueabi-
-CROSS_COMPILE	?= /home/kernel/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+CROSS_COMPILE	?= /home/anryl/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 # arm-eabi-
 CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
 

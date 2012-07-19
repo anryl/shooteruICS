@@ -1,5 +1,5 @@
 make -j16 ARCH=arm
-rm /home/kernel/build/10/system/lib/modules/*.ko
-rm /home/kernel/build/10/kernel/zImage
-find -iname '*.ko' -exec cp {} /home/kernel/build/10/system/lib/modules/ \;
-find -iname 'zImage' -exec cp {} /home/kernel/build/10/kernel/ \;
+rm /home/anryl/build/10/system/lib/modules/*.ko
+rm /home/anryl/build/10/kernel/zImage
+find -iname '*.ko' -exec cp {} /home/anryl/build/10/system/lib/modules/ \;
+find -iname 'zImage' -exec cp {} /home/anryl/build/10/kernel/ \;
