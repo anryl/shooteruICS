@@ -38,6 +38,7 @@
 #include <linux/suspend.h>
 #include <linux/earlysuspend.h>
 #include <mach/rpm.h>
+#include <linux/fastchg.h>
 
 #define BATT_SUSPEND_CHECK_TIME			3600
 #define BATT_TIMER_CHECK_TIME			360
@@ -314,10 +315,24 @@ static void cable_status_notifier_func(enum usb_connect_type online)
 
 	switch (online) {
 	case CONNECT_TYPE_USB:
+	
+#ifdef CONFIG_FORCE_FAST_CHARGE
+    if (force_fast_charge == 1) {
+      BATT_LOG("cable USB forced fast charge");
+      htc_batt_info.rep.charging_source = CHARGER_AC;
+      radio_set_cable_status(CHARGER_AC);
+    } else {
+      BATT_LOG("cable USB");
+      htc_batt_info.rep.charging_source = CHARGER_USB;
+      radio_set_cable_status(CHARGER_USB);
+   }
+#else
+
 		BATT_LOG("cable USB");
 		htc_batt_info.rep.charging_source = CHARGER_USB;
 		radio_set_cable_status(CHARGER_USB);
 		break;
+#endif
 	case CONNECT_TYPE_AC:
 		BATT_LOG("cable AC");
 		htc_batt_info.rep.charging_source = CHARGER_AC;

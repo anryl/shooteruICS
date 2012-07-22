@@ -79,13 +79,13 @@ config ARCH_MSM8X60
 	select CPU_HAS_L2_PMU
 	select MSM_SPM_V1
 
-#config FORCE_FAST_CHARGE
-#       	bool "Force AC charge mode at will"
-#      	default y
-#       	help
-#        	A simple sysfs interface to force adapters that
-#        	are detected as USB to charge as AC.
-#
+config FORCE_FAST_CHARGE
+       	bool "Force AC charge mode at will"
+      	default y
+       	help
+        	A simple sysfs interface to force adapters that
+        	are detected as USB to charge as AC.
+
 config ARCH_MSM8X60_LTE
 	bool "MSM8X60_LTE"
 	depends on ARCH_MSM8X60
