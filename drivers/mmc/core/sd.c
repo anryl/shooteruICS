@@ -1005,6 +1005,7 @@ static int mmc_sd_init_card(struct mmc_host *host, u32 ocr,
 		 * Set bus speed.
 		 */
 		mmc_set_clock(host, mmc_sd_get_max_clock(card));
+
 		/*
 		 * Switch to wider bus (if supported).
 		 */

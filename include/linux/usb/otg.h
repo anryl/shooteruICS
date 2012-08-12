@@ -258,6 +258,7 @@ otg_set_power(struct otg_transceiver *otg, unsigned mA)
 {
 	return otg->set_power(otg, mA);
 }
+
 /* Context: can sleep */
 static inline int
 otg_set_suspend(struct otg_transceiver *otg, int suspend)

@@ -486,7 +486,6 @@ int hci_conn_del(struct hci_conn *conn)
 	if (conn->handle == 0)
 		kfree(conn);
 
-
 	return 0;
 }
 

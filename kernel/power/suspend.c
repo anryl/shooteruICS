@@ -23,6 +23,7 @@
 #include <linux/slab.h>
 #include <linux/suspend.h>
 #include <linux/syscore_ops.h>
+#include <linux/ftrace.h>
 #include <trace/events/power.h>
 
 #include "power.h"
@@ -213,7 +214,8 @@ int suspend_devices_and_enter(suspend_state_t state)
 			goto Close;
 	}
 	if (!suspend_console_deferred)
-		suspend_console();
+ 	suspend_console();
+	ftrace_stop();
 	suspend_test_start();
 	error = dpm_suspend_start(PMSG_SUSPEND);
 	if (error) {
@@ -230,8 +232,9 @@ int suspend_devices_and_enter(suspend_state_t state)
 	suspend_test_start();
 	dpm_resume_end(PMSG_RESUME);
 	suspend_test_finish("resume devices");
-	if (!suspend_console_deferred)
-		resume_console();
+	ftrace_start();
+ 	if (!suspend_console_deferred)
+	resume_console();
  Close:
 	if (suspend_ops->end)
 		suspend_ops->end();

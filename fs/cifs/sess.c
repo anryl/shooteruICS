@@ -253,7 +253,6 @@ static void ascii_ssetup_strings(char **pbcc_area, struct cifs_ses *ses,
 	bcc_ptr++; /* account for null termination */
 
 	/* copy domain */
-
 	if (ses->domainName != NULL) {
 		strncpy(bcc_ptr, ses->domainName, 256);
 		bcc_ptr += strnlen(ses->domainName, 256);

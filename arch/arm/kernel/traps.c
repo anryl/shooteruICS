@@ -50,7 +50,6 @@ unsigned int user_debug;
 static int __init user_debug_setup(char *str)
 {
 	get_option(&str, &user_debug);
-
 	return 1;
 }
 __setup("user_debug=", user_debug_setup);

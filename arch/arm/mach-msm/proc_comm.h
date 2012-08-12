@@ -167,6 +167,7 @@ enum {
 	PCOM_CMD_FAIL_SMSM_NOT_INIT,
 	PCOM_CMD_FAIL_PROC_COMM_BUSY,
 	PCOM_CMD_FAIL_PROC_COMM_NOT_INIT,
+
 };
 
 /* List of VREGs that support the Pull Down Resistor setting. */

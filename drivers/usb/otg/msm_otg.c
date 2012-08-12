@@ -329,6 +329,7 @@ put_3p3:
 	regulator_put(hsusb_3p3);
 	return rc;
 }
+
 #ifdef CONFIG_PM_SLEEP
 #define USB_PHY_SUSP_DIG_VOL  500000
 static int msm_hsusb_config_vddcx(int high)
@@ -1978,6 +1979,7 @@ static void msm_otg_init_sm(struct msm_otg *motg)
 				set_bit(ID, &motg->inputs);
 			else
 				clear_bit(ID, &motg->inputs);
+
 			if (otgsc & OTGSC_BSV)
 				set_bit(B_SESS_VLD, &motg->inputs);
 			else
@@ -2651,7 +2653,6 @@ static struct dentry *msm_otg_dbg_aca;
 
 static int msm_otg_debugfs_init(struct msm_otg *motg)
 {
-
 	msm_otg_dbg_root = debugfs_create_dir("msm_otg", NULL);
 
 	if (!msm_otg_dbg_root || IS_ERR(msm_otg_dbg_root))

@@ -1807,7 +1807,6 @@ int snd_soc_dapm_mux_update_power(struct snd_soc_dapm_widget *widget,
 
 	/* find dapm widget path assoc with kcontrol */
 	list_for_each_entry(path, &widget->dapm->card->paths, list) {
-
 		if (path->kcontrol != kcontrol)
 			continue;
 
