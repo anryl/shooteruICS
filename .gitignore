@@ -34,6 +34,7 @@ modules.builtin
 *.gcno
 *.~
 *.rej
+*.cool
 
 #
 # Top-level generic files
@@ -52,7 +53,7 @@ modules.builtin
 #
 !.gitignore
 !.mailmap
-
+!.config
 #
 # Generated include files
 #
