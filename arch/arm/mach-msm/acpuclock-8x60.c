@@ -33,7 +33,7 @@
 #include "acpuclock.h"
 #include "avs.h"
 
-extern unsigned int max_capped;
+//extern unsigned int max_capped;
 
 #if defined(pr_debug)
 #undef pr_debug
@@ -261,8 +261,8 @@ static struct clkctl_acpu_speed acpu_freq_tbl_1188mhz[] = {
   { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(20), 1350000, 0x03006000},
   { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(22), 1375000, 0x03006000},
   { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(22), 1400000, 0x03006000},
-  { {1, 1}, 1890000,  ACPU_SCPLL, 0, 0, 1, 0x23, L2(22), 1425000, 0x03006000},
-  { {1, 1}, 1944000,  ACPU_SCPLL, 0, 0, 1, 0x24, L2(22), 1450000, 0x03006000},
+  /*{ {1, 1}, 1890000,  ACPU_SCPLL, 0, 0, 1, 0x23, L2(22), 1400000, 0x03006000},
+  { {1, 1}, 1944000,  ACPU_SCPLL, 0, 0, 1, 0x24, L2(22), 1450000, 0x03006000},*/
   { {0, 0}, 0 },
 };
 
@@ -546,8 +546,8 @@ static int acpuclk_8x60_set_rate(int cpu, unsigned long rate,
 	}
 	
 	
-	if (max_capped && rate > max_capped)
-		rate = max_capped;
+//	if (max_capped && rate > max_capped)
+//		rate = max_capped;
 
 	if (reason == SETRATE_CPUFREQ || reason == SETRATE_HOTPLUG)
 		mutex_lock(&drv_state.lock);
@@ -914,7 +914,7 @@ static __init struct clkctl_acpu_speed *select_freq_plan(void)
 
 	pr_info("pte_efuse=0x%X, speed_bin=0x%X, pvs=0x%X\n", pte_efuse, speed_bin, pvs);
 */
-		max_khz = 1890000;
+		max_khz = 1836000;
 		acpu_freq_tbl = acpu_freq_tbl_1188mhz;
 
 
@@ -966,7 +966,7 @@ static int __init acpuclk_8x60_init(struct acpuclk_soc_data *soc_data)
 
 	/* Improve boot time by ramping up CPUs immediately. */
 	for_each_online_cpu(cpu)
-		acpuclk_8x60_set_rate(cpu, CONFIG_MSM_CPU_FREQ_MAX, SETRATE_INIT);
+		acpuclk_8x60_set_rate(cpu, 1512000, SETRATE_INIT);
 
 	acpuclk_register(&acpuclk_8x60_data);
 	cpufreq_table_init();

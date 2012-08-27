@@ -30,10 +30,6 @@
 
 #include "acpuclock.h"
 
-unsigned int max_capped;
-/* initialize to a default cap freq */
-static unsigned int screen_off_max_freq = 594000;
-
 #ifdef CONFIG_SMP
 struct cpufreq_work_struct {
 	struct work_struct work;
@@ -71,7 +67,7 @@ static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq)
 		freqs.new = new_freq;
 	freqs.cpu = policy->cpu;
 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-	ret = acpuclk_set_rate(policy->cpu, new_freq, SETRATE_CPUFREQ);
+	ret = acpuclk_set_rate(policy->cpu, freqs.new, SETRATE_CPUFREQ);
 	if (!ret)
 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
 
@@ -89,76 +85,6 @@ static void set_cpu_work(struct work_struct *work)
 }
 #endif
 
-#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-bool lmf_screen_state;
-#endif
-
-static void msm_cpu_early_suspend(struct early_suspend *h)
-{
-	unsigned int cur;
-	int cpu = 0;
-
-	for_each_possible_cpu(cpu) {
-		mutex_lock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-
-		if (screen_off_max_freq) {
-			max_capped = screen_off_max_freq;
-
-			cur = acpuclk_get_rate(cpu);
-			if (cur > max_capped) {
-				acpuclk_set_rate(cpu, max_capped,
-						SETRATE_CPUFREQ);
-			}
-		}
-
-		/* disable 2nd core as well since screen is off */
-		if (cpu == 0 && num_online_cpus() > 1) {
-#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-			lmf_screen_state = false;
-#endif
-			cpu_down(1);
-		}
-		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-	}
-}
-
-static void msm_cpu_late_resume(struct early_suspend *h)
-{
-	unsigned int cur;
-	int cpu = 0;
-
-	for_each_possible_cpu(cpu) {
-
-		mutex_lock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-
-		if (max_capped) {
-			struct cpufreq_work_struct *cpu_work = &per_cpu(cpufreq_work, cpu);
-			max_capped = 0;
-
-			cur = acpuclk_get_rate(cpu);
-			if (cur != cpu_work->frequency) {
-				acpuclk_set_rate(cpu, cpu_work->frequency,
-						SETRATE_CPUFREQ);
-			}
-		}
-
-		/* re-enable 2nd core */
-		if (num_online_cpus() < 2 && cpu == 0) {
-#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-			lmf_screen_state = true;
-#endif
-			cpu_up(1);
-			}
-		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
-	}
-}
-
-static struct early_suspend msm_cpu_early_suspend_handler = {
-	.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,
-	.suspend = msm_cpu_early_suspend,
-	.resume = msm_cpu_late_resume,
-};
-
 static int msm_cpufreq_target(struct cpufreq_policy *policy,
 				unsigned int target_freq,
 				unsigned int relation)
@@ -170,13 +96,13 @@ static int msm_cpufreq_target(struct cpufreq_policy *policy,
 	struct cpufreq_work_struct *cpu_work = NULL;
 	cpumask_var_t mask;
 
+	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
+		return -ENOMEM;
+
 	if (!cpu_active(policy->cpu)) {
 		pr_info("cpufreq: cpu %d is not active.\n", policy->cpu);
 		return -ENODEV;
 	}
-
-	if (!alloc_cpumask_var(&mask, GFP_KERNEL))
-		return -ENOMEM;
 #endif
 
 	mutex_lock(&per_cpu(cpufreq_suspend, policy->cpu).suspend_mutex);
@@ -220,15 +146,13 @@ static int msm_cpufreq_target(struct cpufreq_policy *policy,
 		wait_for_completion(&cpu_work->complete);
 	}
 
+	free_cpumask_var(mask);
 	ret = cpu_work->status;
 #else
 	ret = set_cpu_freq(policy, table[index].frequency);
 #endif
 
 done:
-#ifdef CONFIG_SMP
-	free_cpumask_var(mask);
-#endif
 	mutex_unlock(&per_cpu(cpufreq_suspend, policy->cpu).suspend_mutex);
 	return ret;
 }
@@ -296,11 +220,9 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 	INIT_WORK(&cpu_work->work, set_cpu_work);
 	init_completion(&cpu_work->complete);
 #endif
-
-#ifdef CONFIG_MSM_CPU_FREQ_SET_MIN_MAX
-	policy->min = CONFIG_MSM_CPU_FREQ_MIN;
+/* set safe default min and max speeds */
 	policy->max = CONFIG_MSM_CPU_FREQ_MAX;
-#endif
+	policy->min = CONFIG_MSM_CPU_FREQ_MIN;
 	return 0;
 }
 
@@ -313,8 +235,6 @@ static int msm_cpufreq_suspend(void)
 		per_cpu(cpufreq_suspend, cpu).device_suspended = 1;
 		mutex_unlock(&per_cpu(cpufreq_suspend, cpu).suspend_mutex);
 	}
-	if (num_online_cpus() > 1)
-		cpu_down(1);
 
 	return NOTIFY_DONE;
 }
@@ -364,53 +284,8 @@ static ssize_t store_mfreq(struct sysdev_class *class,
 
 static SYSDEV_CLASS_ATTR(mfreq, 0200, NULL, store_mfreq);
 
-static ssize_t show_screen_off_freq(struct cpufreq_policy *policy, char *buf)
-{
-	return sprintf(buf, "%u\n", screen_off_max_freq);
-}
-
-static ssize_t store_screen_off_freq(struct cpufreq_policy *policy,
-		const char *buf, size_t count)
-{
-	unsigned int freq = 0;
-	int ret;
-	int index;
-	struct cpufreq_frequency_table *freq_table = cpufreq_frequency_get_table(policy->cpu);
-
-	if (!freq_table)
-		return -EINVAL;
-
-	ret = sscanf(buf, "%u", &freq);
-	if (ret != 1)
-		return -EINVAL;
-
-	mutex_lock(&per_cpu(cpufreq_suspend, policy->cpu).suspend_mutex);
-
-	ret = cpufreq_frequency_table_target(policy, freq_table, freq,
-			CPUFREQ_RELATION_H, &index);
-	if (ret)
-		goto out;
-
-	screen_off_max_freq = freq_table[index].frequency;
-
-	ret = count;
-
-out:
-	mutex_unlock(&per_cpu(cpufreq_suspend, policy->cpu).suspend_mutex);
-	return ret;
-}
-
-struct freq_attr msm_cpufreq_attr_screen_off_freq = {
-	.attr = { .name = "screen_off_max_freq",
-		.mode = 0644,
-	},
-	.show = show_screen_off_freq,
-	.store = store_screen_off_freq,
-};
-
 static struct freq_attr *msm_freq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
-	&msm_cpufreq_attr_screen_off_freq,
 	NULL,
 };
 
@@ -447,9 +322,6 @@ static int __init msm_cpufreq_register(void)
 #endif
 
 	register_pm_notifier(&msm_cpufreq_pm_notifier);
-
-	register_early_suspend(&msm_cpu_early_suspend_handler);
-
 	return cpufreq_register_driver(&msm_cpufreq_driver);
 }
 
