@@ -33,6 +33,8 @@
 #include "acpuclock.h"
 #include "avs.h"
 
+extern unsigned int max_capped;
+
 #if defined(pr_debug)
 #undef pr_debug
 #endif
@@ -542,6 +544,10 @@ static int acpuclk_8x60_set_rate(int cpu, unsigned long rate,
 		rc = -EINVAL;
 		goto out;
 	}
+	
+	
+	if (max_capped && rate > max_capped)
+		rate = max_capped;
 
 	if (reason == SETRATE_CPUFREQ || reason == SETRATE_HOTPLUG)
 		mutex_lock(&drv_state.lock);
@@ -908,7 +914,7 @@ static __init struct clkctl_acpu_speed *select_freq_plan(void)
 
 	pr_info("pte_efuse=0x%X, speed_bin=0x%X, pvs=0x%X\n", pte_efuse, speed_bin, pvs);
 */
-		max_khz = 1836000;
+		max_khz = 1890000;
 		acpu_freq_tbl = acpu_freq_tbl_1188mhz;
 
 
