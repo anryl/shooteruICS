@@ -1,6 +1,6 @@
 clear
-make -j8 ARCH=arm
-rm /home/anryl/build/40/system/lib/modules/*.ko
-rm /home/anryl/build/40/kernel/zImage
-find -iname '*.ko' -exec cp {} /home/anryl/build/40/system/lib/modules/ \;
-find -iname 'zImage' -exec cp {} /home/anryl/build/40/kernel/ \;
+make -j16 ARCH=arm
+rm /home/anryl/build/42/system/lib/modules/*.ko
+rm /home/anryl/build/42/kernel/zImage
+find -iname '*.ko' -exec cp {} /home/anryl/build/42/system/lib/modules/ \;
+find -iname 'zImage' -exec cp {} /home/anryl/build/42/kernel/ \;
