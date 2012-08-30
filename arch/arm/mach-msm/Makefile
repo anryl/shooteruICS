@@ -1,3 +1,5 @@
+CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
+
 obj-y += io.o dma.o memory.o timer.o
 obj-y += clock.o clock-voter.o clock-dummy.o
 obj-y += subsystem_map.o
