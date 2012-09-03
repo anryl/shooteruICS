@@ -2289,7 +2289,7 @@ static struct rcg_clk gfx2d0_clk = {
 	.c = {
 		.dbg_name = "gfx2d0_clk",
 		.ops = &clk_ops_rcg_8x60,
-		VDD_DIG_FMAX_MAP3(LOW,  160000000, NOMINAL, 200000000,
+		VDD_DIG_FMAX_MAP3(LOW,  200000000, NOMINAL, 228571000,
 				  HIGH, 266667000),
 		CLK_INIT(gfx2d0_clk.c),
 	},
@@ -2331,7 +2331,7 @@ static struct rcg_clk gfx2d1_clk = {
 	.c = {
 		.dbg_name = "gfx2d1_clk",
 		.ops = &clk_ops_rcg_8x60,
-		VDD_DIG_FMAX_MAP3(LOW,  160000000, NOMINAL, 200000000,
+		VDD_DIG_FMAX_MAP3(LOW,  200000000, NOMINAL, 228571000,
 				  HIGH, 266667000),
 		CLK_INIT(gfx2d1_clk.c),
 	},
@@ -2402,7 +2402,7 @@ static struct rcg_clk gfx3d_clk = {
 	.c = {
 		.dbg_name = "gfx3d_clk",
 		.ops = &clk_ops_rcg_8x60,
-		VDD_DIG_FMAX_MAP3(LOW,   96000000, NOMINAL, 200000000,
+		VDD_DIG_FMAX_MAP3(LOW, 96000000, NOMINAL, 177778000,
 				  HIGH, 320000000),
 		CLK_INIT(gfx3d_clk.c),
 		.depends = &gmem_axi_clk.c,
