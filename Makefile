@@ -1,6 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 0
-SUBLEVEL = 42
+SUBLEVEL = 16
 EXTRAVERSION =
 NAME = Sneaky Weasel
 
@@ -47,7 +47,6 @@ endif
 ifndef KBUILD_VERBOSE
   KBUILD_VERBOSE = 0
 endif
-
 
 # Call a source code checker (by default, "sparse") as part of the
 # C compilation.
@@ -196,11 +195,7 @@ SUBARCH := arm
 SUBARCH := arm
 export KBUILD_BUILDHOST := $(SUBARCH)
 ARCH		?= $(SUBARCH)
-#CROSS_COMPILE	?= /usr/bin/arm-2010q1/bin/arm-none-linux-gnueabi-
-#CROSS_COMPILE	?= /home/anryl/gits/arm-eabi-4.4.3/bin/arm-eabi-
-CROSS_COMPILE	?= /home/anryl/gcc-linaro-arm-linux-gnueabihf-2012.07-20120720_linux/bin/arm-linux-gnueabihf-
-#CROSS_COMPILE	?= /home/anryl/t46/arm-eabi-4.6/bin/arm-eabi-
-# arm-eabi-
+CROSS_COMPILE	?= arm-eabi-
 CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
 
 # Architecture as present in compile.h
@@ -376,16 +371,12 @@ LINUXINCLUDE    := -I$(srctree)/arch/$(hdr-arch)/include \
                    -include include/generated/autoconf.h
 
 KBUILD_CPPFLAGS := -D__KERNEL__
+
 KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks
-# KBUILD_CFLAGS   := 
-#-Wundef -Wstrict-prototypes -Wno-trigraphs \
-#		   -fno-strict-aliasing -fno-common \
-#		   -Wno-format-security \
-#		   -fno-delete-null-pointer-checks
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -574,14 +565,11 @@ endif # $(dot-config)
 # This allow a user to issue only 'make' to build a kernel including modules
 # Defaults to vmlinux, but the arch makefile usually adds further targets
 all: vmlinux
- ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
- KBUILD_CFLAGS  += -Os
- endif
- ifdef CONFIG_CC_OPTIMIZE_DEFAULT
- KBUILD_CFLAGS  += -O2
-endif
- ifdef CONFIG_CC_OPTIMIZE_ALOT
- KBUILD_CFLAGS  += -O3
+
+ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+KBUILD_CFLAGS	+= -Os
+else
+KBUILD_CFLAGS	+= -O2
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile

@@ -422,6 +422,7 @@ static void hidp_process_data(struct hidp_session *session, struct sk_buff *skb,
 
 		if (session->hid)
 			hid_input_report(session->hid, HID_INPUT_REPORT, skb->data, skb->len, 0);
+
 		break;
 
 	case HIDP_DATA_RTYPE_OTHER:

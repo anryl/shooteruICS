@@ -1456,7 +1456,7 @@ static inline bool netdev_uses_dsa_tags(struct net_device *dev)
 #ifndef CONFIG_NET_NS
 static inline void skb_set_dev(struct sk_buff *skb, struct net_device *dev)
 {
-  skb->dev = dev;
+	skb->dev = dev;
 }
 #else /* CONFIG_NET_NS */
 void skb_set_dev(struct sk_buff *skb, struct net_device *dev);

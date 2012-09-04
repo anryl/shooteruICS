@@ -1607,6 +1607,7 @@ static int pair_device(struct sock *sk, u16 index, unsigned char *data, u16 len)
 		return cmd_status(sk, index, MGMT_OP_PAIR_DEVICE, EINVAL);
 
 	hdev = hci_dev_get(index);
+
 	if (!hdev)
 		return cmd_status(sk, index, MGMT_OP_PAIR_DEVICE, ENODEV);
 

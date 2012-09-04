@@ -60,18 +60,12 @@ int set_task_ioprio(struct task_struct *task, int ioprio)
 			err = -ENOMEM;
 			break;
 		}
-		/* let other ioc users see the new values */
-		/*smp_wmb();*/
 		task->io_context = ioc;
 	} while (1);
 
 	if (!err) {
 		ioc->ioprio = ioprio;
-		/* make sure schedulers see the new ioprio value */
-		/*wmb();
-		for (int i = 0; i < IOC_IOPRIO_CHANGED_BITS; i++)
-				set_bit(i, ioc->ioprio_changed);*/
-		set_bit(1, ioc->ioprio_changed);
+		ioc->ioprio_changed = 1;
 	}
 
 	task_unlock(task);
@@ -254,4 +248,3 @@ SYSCALL_DEFINE2(ioprio_get, int, which, int, who)
 	rcu_read_unlock();
 	return ret;
 }
-

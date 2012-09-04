@@ -108,7 +108,6 @@
 #include <mach/rpm-regulator.h>
 #include <mach/restart.h>
 #include <mach/cable_detect.h>
-#include <linux/msm_tsens.h>
 
 #include "board-shooter_u.h"
 #include "devices.h"
@@ -136,11 +135,9 @@
 #endif
 
 #ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
- int set_two_phase_freq(int cpufreq);
- #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-  int id_set_two_phase_freq(int cpufreq);
- #endif
+int set_two_phase_freq(int cpufreq);
 #endif
+
 int __init pyd_init_panel(struct resource *res, size_t size);
 
 enum {
@@ -431,9 +428,9 @@ static struct msm_spm_platform_data msm_spm_data[] __initdata = {
 
 #ifdef CONFIG_PERFLOCK
 static unsigned shooter_u_perf_acpu_table[] = {
-  540000000,
-  1026000000,
-  1512000000,
+	540000000,
+	1026000000,
+	1512000000,
 };
 
 static struct perflock_platform_data shooter_u_perflock_data = {
@@ -1159,7 +1156,7 @@ static void msm_hsusb_vbus_power(bool on)
 static int shooter_u_phy_init_seq[] = { 0x06, 0x36, 0x0C, 0x31, 0x31, 0x32, 0x1, 0x0E, 0x1, 0x11, -1 };
 static struct msm_otg_platform_data msm_otg_pdata = {
 	.phy_init_seq		= shooter_u_phy_init_seq,
-	.mode			= USB_OTG,
+	.mode			= USB_PERIPHERAL,
 	.otg_control		= OTG_PMIC_CONTROL,
 	.phy_type		= CI_45NM_INTEGRATED_PHY,
 	.vbus_power		= msm_hsusb_vbus_power,
@@ -1791,7 +1788,7 @@ static struct spi_board_info sp3d_spi_board_info[] __initdata = {
 
 static struct camera_flash_cfg msm_camera_sensor_flash_cfg = {
 	.low_temp_limit		= 10,
-	.low_cap_limit		= 10,
+	.low_cap_limit		= 15,
 };
 
 #ifdef CONFIG_SP3D
@@ -2994,11 +2991,9 @@ static struct platform_device *early_devices[] __initdata = {
 #endif
 };
 
-static struct tsens_platform_data pyr_tsens_pdata  = {
-                .tsens_factor           = 1000,
-                .hw_type                = MSM_8660,
-                .tsens_num_sensor       = 1,
-                .slope                  = 702,
+static struct platform_device msm_tsens_device = {
+	.name   = "tsens-tm",
+	.id = -1,
 };
 
 #ifdef CONFIG_SENSORS_MSM_ADC
@@ -3421,7 +3416,7 @@ static struct pm8058_led_config pm_led_config[] = {
 		.duites_size = 8,
 		.duty_time_ms = 32,
 		.lut_flag = PM_PWM_LUT_RAMP_UP | PM_PWM_LUT_PAUSE_HI_EN,
-		.out_current = 2,	/*anryl 10,*/
+		.out_current = 10,
 	},
 
 };
@@ -3643,7 +3638,6 @@ static struct platform_device *shooter_u_devices[] __initdata = {
 #endif
 
 	&msm_device_otg,
-	&msm_device_hsusb_host,
 #ifdef CONFIG_BATTERY_MSM
 	&msm_batt_device,
 #endif
@@ -3713,6 +3707,7 @@ static struct platform_device *shooter_u_devices[] __initdata = {
 	&msm_device_rng,
 #endif
 
+	&msm_tsens_device,
 	&msm_rpm_device,
 	&cable_detect_device,
 #ifdef CONFIG_BT
@@ -6441,7 +6436,6 @@ static void __init msm8x60_init(struct msm_board_data *board_data)
 
 	raw_speed_bin = readl(QFPROM_SPEED_BIN_ADDR);
 	speed_bin = raw_speed_bin & 0xF;
-	msm_tsens_early_init(&pyr_tsens_pdata);
 	/*
 	 * Initialize RPM first as other drivers and devices may need
 	 * it for their initialization.
@@ -6519,9 +6513,6 @@ static void __init msm8x60_init(struct msm_board_data *board_data)
 
 #ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	set_two_phase_freq(1134000);
-	#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-	 id_set_two_phase_freq(1134000);
-	#endif
 #endif
 
 	msm8x60_init_tlmm();

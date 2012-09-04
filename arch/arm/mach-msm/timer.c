@@ -1203,6 +1203,7 @@ int __cpuinit local_timer_setup(struct clock_event_device *evt)
 	gic_enable_ppi(clock->irq.irq);
 
 	clockevents_register_device(evt);
+
 	return 0;
 }
 
@@ -1210,7 +1211,6 @@ int local_timer_ack(void)
 {
 	return 1;
 }
-
 #endif
 
 struct sys_timer msm_timer = {

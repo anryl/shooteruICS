@@ -852,7 +852,6 @@ static void msm_hs_submit_tx_locked(struct uart_port *uport)
 	struct msm_hs_port *msm_uport = UARTDM_TO_MSM(uport);
 	struct msm_hs_tx *tx = &msm_uport->tx;
 	struct circ_buf *tx_buf = &msm_uport->uport.state->xmit;
-
 	if (uart_circ_empty(tx_buf) || uport->state->port.tty->stopped) {
 		msm_hs_stop_tx_locked(uport);
 		return;
@@ -1890,7 +1889,6 @@ static int __init msm_hs_probe(struct platform_device *pdev)
 						"uartdm_channels");
 	if (unlikely(!resource))
 		return -ENXIO;
-
 	msm_uport->dma_tx_channel = resource->start;
 	msm_uport->dma_rx_channel = resource->end;
 
@@ -1898,7 +1896,6 @@ static int __init msm_hs_probe(struct platform_device *pdev)
 						"uartdm_crci");
 	if (unlikely(!resource))
 		return -ENXIO;
-
 	msm_uport->dma_tx_crci = resource->start;
 	msm_uport->dma_rx_crci = resource->end;
 
@@ -2066,8 +2063,8 @@ static int msm_hs_runtime_resume(struct device *dev)
 	struct platform_device *pdev = container_of(dev, struct
 						    platform_device, dev);
 	struct msm_hs_port *msm_uport = &q_uart_port[pdev->id];
-
 	msm_hs_request_clock_on(&msm_uport->uport);
+
 	return 0;
 }
 

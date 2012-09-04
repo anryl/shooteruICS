@@ -50,6 +50,7 @@ unsigned int user_debug;
 static int __init user_debug_setup(char *str)
 {
 	get_option(&str, &user_debug);
+
 	return 1;
 }
 __setup("user_debug=", user_debug_setup);
@@ -477,7 +478,7 @@ do_cache_op(unsigned long start, unsigned long end, int flags)
 			end = vma->vm_end;
 
 		up_read(&mm->mmap_sem);
-		flush_cache_user_range(vma, start, end);
+		flush_cache_user_range(start, end);
 
 #ifdef CONFIG_ARCH_MSM7X27
 		mb();

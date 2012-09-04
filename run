@@ -1,6 +1,7 @@
 clear
-make -j16 ARCH=arm
-rm /home/anryl/build/42/system/lib/modules/*.ko
-rm /home/anryl/build/42/kernel/zImage
-find -iname '*.ko' -exec cp {} /home/anryl/build/42/system/lib/modules/ \;
-find -iname 'zImage' -exec cp {} /home/anryl/build/42/kernel/ \;
+make -j16 ARCH=arm CROSS_COMPILE=/home/anryl/gits/arm-eabi-4.4.3/bin/arm-eabi-
+#make -j16 ARCH=arm CROSS_COMPILE=/home/anryl/gcc-linaro-arm-linux-gnueabihf-2012.07-20120720_linux/bin/arm-linux-gnueabihf- 
+rm /home/anryl/build/16/system/lib/modules/*.ko
+rm /home/anryl/build/16/kernel/zImage
+find -iname '*.ko' -exec cp {} /home/anryl/build/16/system/lib/modules/ \;
+find -iname 'zImage' -exec cp {} /home/anryl/build/16/kernel/ \;

@@ -112,20 +112,14 @@ struct request {
 	 * never put on the IO scheduler. So let the flush fields share
 	 * space with the three elevator_private pointers.
 	 */
-
 	union {
-
-		struct {
-			//struct io_cq		*icq;
-			void			*priv[2];
-		} elv;
 		void *elevator_private[3];
 		struct {
 			unsigned int		seq;
 			struct list_head	list;
-			//rq_end_io_fn		*saved_end_io;
 		} flush;
 	};
+
 	struct gendisk *rq_disk;
 	struct hd_struct *part;
 	unsigned long start_time;
@@ -676,9 +670,6 @@ extern int blk_insert_cloned_request(struct request_queue *q,
 				     struct request *rq);
 extern void blk_delay_queue(struct request_queue *, unsigned long);
 extern void blk_recount_segments(struct request_queue *, struct bio *);
-extern int scsi_verify_blk_ioctl(struct block_device *, unsigned int);
-extern int scsi_cmd_blk_ioctl(struct block_device *, fmode_t,
-			      unsigned int, void __user *);
 extern int scsi_cmd_ioctl(struct request_queue *, struct gendisk *, fmode_t,
 			  unsigned int, void __user *);
 extern int sg_scsi_ioctl(struct request_queue *, struct gendisk *, fmode_t,

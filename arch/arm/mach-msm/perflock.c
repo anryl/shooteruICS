@@ -646,7 +646,7 @@ void __init perflock_init(struct perflock_platform_data *pdata)
 
 	BUG_ON(cpufreq_frequency_table_cpuinfo(&policy, table));
 	policy_min = policy.cpuinfo.min_freq;
-	policy_max = 1512000;
+	policy_max = 1188000;
 
 	if (!pdata)
 		goto invalid_config;
@@ -688,7 +688,7 @@ void __init cpufreq_ceiling_init(struct perflock_platform_data *pdata)
 
 	BUG_ON(cpufreq_frequency_table_cpuinfo(&policy, table));
 	policy_min = policy.cpuinfo.min_freq;
-	policy_max = 1512000;
+	policy_max = policy.cpuinfo.max_freq;
 
 	if (!pdata)
 		goto invalid_config;

@@ -1,10 +1,7 @@
-CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
-
 obj-y += io.o dma.o memory.o timer.o
 obj-y += clock.o clock-voter.o clock-dummy.o
 obj-y += subsystem_map.o
 obj-$(CONFIG_CPU_FREQ_MSM) += cpufreq.o
-obj-$(CONFIG_MSM_MPDEC) += msm_mpdecision.o
 obj-$(CONFIG_DEBUG_FS) += nohlt.o clock-debug.o
 obj-$(CONFIG_KEXEC) += msm_kexec.o
 
@@ -382,7 +379,6 @@ obj-$(CONFIG_MACH_SHOOTER_U) += board-shooter_u-keypad.o
 obj-$(CONFIG_MACH_SHOOTER_U) += board-shooter_u-audio.o
 obj-$(CONFIG_MACH_SHOOTER_U) += htc_bdaddress.o board-shooter_u-rfkill.o
 obj-$(CONFIG_MACH_SHOOTER_U) += board-shooter_u-mmc.o board-shooter_u-wifi.o
-obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 obj-$(CONFIG_MACH_SHOOTER_K) += board-shooter_k.o
 obj-$(CONFIG_MACH_SHOOTER_K) += board-shooter_k-keypad.o
 obj-$(CONFIG_MACH_SHOOTER_K) += board-shooter_k-audio.o
