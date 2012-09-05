@@ -42,7 +42,9 @@
 
 #include <mach/clk.h>
 #include <mach/cable_detect.h>
-
+#ifdef CONFIG_FORCE_FAST_CHARGE
+#include <linux/fastchg.h>
+#endif
 #define MSM_USB_BASE	(motg->regs)
 #define DRIVER_NAME	"msm_otg"
 
@@ -105,6 +107,15 @@ static void send_usb_connect_notify(struct work_struct *w)
 
 	motg->connect_type_ready = 1;
 	USBH_INFO("send connect type %d\n", motg->connect_type);
+#ifdef CONFIG_FORCE_FAST_CHARGE
+  if (motg->connect_type == CONNECT_TYPE_USB) {
+    USB_peripheral_detected = USB_ACC_DETECTED; /* Inform forced fast charge that a USB accessory has been attached */
+    USBH_INFO("USB forced fast charge : USB device currently attached");
+  } else {
+    USB_peripheral_detected = USB_ACC_NOT_DETECTED; /* Inform forced fast charge that a USB accessory has not been attached */
+    USBH_INFO("USB forced fast charge : No USB device currently attached");
+  }
+#endif
 	mutex_lock(&notify_sem);
 #ifdef CONFIG_CABLE_DETECT_ACCESSORY
 	if (cable_get_accessory_type() == DOCK_STATE_DMB) {
@@ -318,6 +329,7 @@ put_3p3:
 	regulator_put(hsusb_3p3);
 	return rc;
 }
+
 #ifdef CONFIG_PM_SLEEP
 #define USB_PHY_SUSP_DIG_VOL  500000
 static int msm_hsusb_config_vddcx(int high)
@@ -798,6 +810,10 @@ static int carkit_phy_reset(struct otg_transceiver *otg)
 	u32 val = 0;
 	u32 ulpi_val = 0;
 	USBH_INFO("%s\n", __func__);
+
+	/*#ifdef CONFIG_FORCE_FAST_CHARGE
+	USB_porttype_detected = NO_USB_DETECTED; 
+	#endif */
 
 	clk_enable(motg->clk);
 	if (motg->pdata->phy_reset)
@@ -1963,6 +1979,7 @@ static void msm_otg_init_sm(struct msm_otg *motg)
 				set_bit(ID, &motg->inputs);
 			else
 				clear_bit(ID, &motg->inputs);
+
 			if (otgsc & OTGSC_BSV)
 				set_bit(B_SESS_VLD, &motg->inputs);
 			else
@@ -2636,7 +2653,6 @@ static struct dentry *msm_otg_dbg_aca;
 
 static int msm_otg_debugfs_init(struct msm_otg *motg)
 {
-
 	msm_otg_dbg_root = debugfs_create_dir("msm_otg", NULL);
 
 	if (!msm_otg_dbg_root || IS_ERR(msm_otg_dbg_root))

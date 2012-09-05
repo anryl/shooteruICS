@@ -75,7 +75,7 @@
 #define SCPLL_LOW_VDD_FMAX	 594000 /* KHz */
 #define SCPLL_LOW_VDD		1000000 /* uV */
 #define SCPLL_NOMINAL_VDD	1100000 /* uV */
-#define FREQ_TABLE_SIZE        34
+#define FREQ_TABLE_SIZE        36
 /* SCPLL Modes. */
 #define SCPLL_POWER_DOWN	0
 #define SCPLL_BYPASS		1
@@ -106,7 +106,6 @@
 
 /* PTE EFUSE register. */
 #define QFPROM_PTE_EFUSE_ADDR		(MSM_QFPROM_BASE + 0x00C0)
-
 
 static const void * const clk_ctl_addr[] = {SPSS0_CLK_CTL_ADDR,
 			SPSS1_CLK_CTL_ADDR};
@@ -214,6 +213,7 @@ static struct clkctl_l2_speed l2_freq_tbl_v2[] = {
 	[17] = {1296000,  1, 0x18, 1200000, 1225000, 3},
 	[18] = {1350000,  1, 0x19, 1200000, 1225000, 3},
 	[19] = {1404000,  1, 0x1A, 1200000, 1250000, 3},
+	[20] = {1458000,  1, 0x1A, 1200000, 1275000, 3},
 }; 
 
 #define L2(x) (&l2_freq_tbl_v2[(x)])
@@ -243,12 +243,14 @@ static struct clkctl_acpu_speed acpu_freq_tbl_v2[] = {
   { {1, 1}, 1404000,  ACPU_SCPLL, 0, 0, 1, 0x1A, L2(19), 1100000, 0x03006000},
   { {1, 1}, 1458000,  ACPU_SCPLL, 0, 0, 1, 0x1B, L2(19), 1100000, 0x03006000},
   { {1, 1}, 1512000,  ACPU_SCPLL, 0, 0, 1, 0x1C, L2(19), 1125000, 0x03006000},
+#if CONFIG_MAX_CLOCK == 1836000
   { {1, 1}, 1566000,  ACPU_SCPLL, 0, 0, 1, 0x1D, L2(19), 1200000, 0x03006000},
-  /*{ {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(19), 1225000, 0x03006000},
+  { {1, 1}, 1620000,  ACPU_SCPLL, 0, 0, 1, 0x1E, L2(19), 1225000, 0x03006000},
   { {1, 1}, 1674000,  ACPU_SCPLL, 0, 0, 1, 0x1F, L2(19), 1250000, 0x03006000},
-  { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(20), 1275000, 0x03006000},
+  { {1, 1}, 1728000,  ACPU_SCPLL, 0, 0, 1, 0x20, L2(19), 1275000, 0x03006000},
   { {1, 1}, 1782000,  ACPU_SCPLL, 0, 0, 1, 0x21, L2(20), 1300000, 0x03006000},
-  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(20), 1325000, 0x03006000},*/
+  { {1, 1}, 1836000,  ACPU_SCPLL, 0, 0, 1, 0x22, L2(20), 1325000, 0x03006000},
+#endif
   { {0, 0}, 0 },
 };
 
@@ -849,7 +851,7 @@ static __init struct clkctl_acpu_speed *select_freq_plan(void)
 	uint32_t   max_khz;
 	struct clkctl_acpu_speed *f;
  
-		max_khz = 1566000;
+		max_khz = CONFIG_MAX_CLOCK;
 		acpu_freq_tbl = acpu_freq_tbl_v2;
 	
 

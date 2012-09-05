@@ -16,7 +16,7 @@ endif
 		obj-$(CONFIG_DEBUG_FS) += pmic_debugfs.o
 	endif
 endif
-
+CONFIG_MAX_CLOCK ?= $(CONFIG_MAX_CLOCK:"%"=%)
 obj-y += acpuclock.o
 obj-y += drv_callback.o
 obj-y += radio_feedback.o

@@ -1,7 +1,12 @@
 if ARCH_MSM
-
 menu "MSM SoC Type"
 
+comment "CPU OC MAX BUILD FREQ 1836000 from acpuclock tables"
+config MAX_CLOCK
+	int "Max CPU Clock"
+	default 1512000
+
+	
 config ARCH_MSM7X01A
 	bool "MSM7x00A / MSM7x01A"
 	select ARCH_MSM_ARM11
