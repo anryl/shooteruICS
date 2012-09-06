@@ -55,8 +55,8 @@ enum {
 struct battery_info_reply {
 	u32 batt_vol;
 	u32 batt_id;
-	s32 batt_temp;
-	s32 batt_current;
+	u32 batt_temp;
+	u32 batt_current;
 	u32 batt_discharg_current;
 	u32 level;
 	u32 charging_source;
@@ -64,7 +64,7 @@ struct battery_info_reply {
 	u32 full_bat;
 	u32 full_level;
 	u32 over_vchg;
-	s32 temp_fault;
+	u32 temp_fault;
 	u32 batt_state;
 };
 

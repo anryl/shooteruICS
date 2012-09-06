@@ -912,7 +912,7 @@ static struct kgsl_device_platform_data kgsl_3d0_pdata = {
 		{
 			.gpu_freq = 320000000,
 			.bus_freq = 4,
-			.io_fraction = 0,
+			.io_fraction = 33,
 		},
 		{
 			.gpu_freq = 266667000,
@@ -973,7 +973,7 @@ static struct resource kgsl_2d0_resources[] = {
 static struct kgsl_device_platform_data kgsl_2d0_pdata = {
 	.pwrlevel = {
 		{
-			.gpu_freq = 228571000,
+			.gpu_freq = 266667000,
 			.bus_freq = 1,
 		},
 		{
@@ -1020,7 +1020,7 @@ static struct resource kgsl_2d1_resources[] = {
 static struct kgsl_device_platform_data kgsl_2d1_pdata = {
 	.pwrlevel = {
 		{
-			.gpu_freq = 200000000,
+			.gpu_freq = 266667000,
 			.bus_freq = 1,
 		},
 		{
