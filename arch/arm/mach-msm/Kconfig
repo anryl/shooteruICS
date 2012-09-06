@@ -263,22 +263,22 @@ config PERFLOCK_SCREEN_POLICY
 config PERFLOCK_SCREEN_ON_MIN
         depends on PERFLOCK_SCREEN_POLICY
         int "Minimum speed while screen on"
-        default MSM_CPU_FREQ_ONDEMAND_MIN
+        default MSM_CPU_FREQ_MIN
 
 config PERFLOCK_SCREEN_ON_MAX
         depends on PERFLOCK_SCREEN_POLICY
         int "Maximum speed while screen on"
-        default MSM_CPU_FREQ_ONDEMAND_MAX
+        default MSM_CPU_FREQ_MAX
 
 config PERFLOCK_SCREEN_OFF_MIN
         depends on PERFLOCK_SCREEN_POLICY
         int "Minimum speed while screen off"
-        default MSM_CPU_FREQ_ONDEMAND_MIN
+        default MSM_CPU_FREQ_MIN
 
 config PERFLOCK_SCREEN_OFF_MAX
         depends on PERFLOCK_SCREEN_POLICY
         int "Maximum speed while screen off"
-        default MSM_CPU_FREQ_ONDEMAND_MIN
+        default MSM_CPU_FREQ_MIN
 
 menu "MSM Board Selection"
 
@@ -1623,14 +1623,6 @@ config MSM_CPU_FREQ_MIN
 
 endif # CPU_FREQ_MSM
 
-config MSM_CPU_FREQ_ONDEMAND_MAX
-        int "Max"
-        default 384000
-
-config MSM_CPU_FREQ_ONDEMAND_MIN
-        int "Min"
-        default 245760
-
 config MSM_CPU_AVS
 	bool "Enable software controlled Adaptive Voltage Scaling (AVS)"
 	depends on (ARCH_MSM_SCORPION && QSD_SVS)
@@ -2394,6 +2386,13 @@ config REMOVE_EBI1_FIXED_CLK
 	default n
 	help
 		use for 2x Radio
+
+config FORCE_FAST_CHARGE
+	bool "Force AC charge mode at will"
+	default y
+	help
+	  A simple sysfs interface to force adapters that
+	  are detected as USB to charge as AC.
 
 config HTC_ACCESSORY_ONEWIRE
         tristate "HTC accessory one wire protocol driver"

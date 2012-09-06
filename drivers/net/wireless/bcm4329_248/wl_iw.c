@@ -5952,7 +5952,7 @@ wl_iw_set_power(
 
 	WL_TRACE(("%s: SIOCSIWPOWER\n", dev->name));
 
-	pm = vwrq->disabled ? PM_OFF : PM_MAX;
+	pm = vwrq->disabled ? PM_OFF : PM_FAST;
 
 	pm = htod32(pm);
 	if ((error = dev_wlc_ioctl(dev, WLC_SET_PM, &pm, sizeof(pm))))
@@ -6202,12 +6202,24 @@ wl_iw_set_pmksa(
 		if ((pmkid_list.pmkids.npmkid > 0) && (i < pmkid_list.pmkids.npmkid)) {
 			bzero(&pmkid_list.pmkids.pmkid[i], sizeof(pmkid_t));
 			for (; i < (pmkid_list.pmkids.npmkid - 1); i++) {
-				bcopy(&pmkid_list.pmkids.pmkid[i+1].BSSID,
-					&pmkid_list.pmkids.pmkid[i].BSSID,
-					ETHER_ADDR_LEN);
-				bcopy(&pmkid_list.pmkids.pmkid[i+1].PMKID,
-					&pmkid_list.pmkids.pmkid[i].PMKID,
+				if (i == 0)
+				{
+					bcopy(&pmkid_list.foo[0].BSSID,
+						&pmkid_list.pmkids.pmkid[i].BSSID,
+						ETHER_ADDR_LEN);
+					bcopy(&pmkid_list.foo[0].PMKID,
+						&pmkid_list.pmkids.pmkid[i].PMKID,
+						WPA2_PMKID_LEN);
+				}
+				else
+				{
+					bcopy(&pmkid_list.foo[i+1].BSSID,
+						&pmkid_list.foo[i].BSSID,
+						ETHER_ADDR_LEN);
+					bcopy(&pmkid_list.foo[i+1].PMKID,
+ 						&pmkid_list.foo[i].PMKID,
 					WPA2_PMKID_LEN);
+				}
 			}
 			pmkid_list.pmkids.npmkid--;
 		}

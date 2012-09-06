@@ -37,7 +37,7 @@
 #define KGSL_MAX_PWRLEVELS 5
 
 #define KGSL_CONVERT_TO_MBPS(val) \
-	(val*1000*1000U)
+	(val*110/100*1000*1000U)
 
 /* device id */
 enum kgsl_deviceid {
