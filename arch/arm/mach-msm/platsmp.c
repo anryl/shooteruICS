@@ -114,12 +114,14 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 		ret = scm_set_boot_addr((void *)
 					virt_to_phys(msm_secondary_startup),
 					SCM_FLAG_COLDBOOT_CPU1);
-		if (ret == 0)
+		if (ret == 0) {
 			release_secondary(cpu);
-		else
-			printk(KERN_DEBUG "Failed to set secondary core boot "
-					  "address\n");
-		per_cpu(cold_boot_done, cpu) = true;
+		}
+		else {
+			printk(KERN_DEBUG "Failed to set secondary core boot address\n");
+		}
+			per_cpu(cold_boot_done, cpu) = true;
+
 	}
 
 	pen_release = cpu;
@@ -131,7 +133,7 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 	/* Use smp_cross_call() to send a soft interrupt to wake up
 	 * the other core.
 	 */
-	gic_raise_softirq(cpumask_of(cpu), 1);
+	gic_raise_softirq(cpumask_of(cpu), 0);
 
 	while (pen_release != 0xFFFFFFFF) {
 		dmac_inv_range((void *)&pen_release,

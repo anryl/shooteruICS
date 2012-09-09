@@ -4,6 +4,7 @@ obj-y += subsystem_map.o
 obj-$(CONFIG_CPU_FREQ_MSM) += cpufreq.o
 obj-$(CONFIG_DEBUG_FS) += nohlt.o clock-debug.o
 obj-$(CONFIG_KEXEC) += msm_kexec.o
+obj-$(CONFIG_MSM_MPDEC) += msm_mpdecision.o
 
 obj-$(CONFIG_MSM_PROC_COMM) += proc_comm.o
 ifndef CONFIG_ARCH_MSM8X60
@@ -16,7 +17,7 @@ endif
 		obj-$(CONFIG_DEBUG_FS) += pmic_debugfs.o
 	endif
 endif
-CONFIG_MAX_CLOCK ?= $(CONFIG_MAX_CLOCK:"%"=%)
+
 obj-y += acpuclock.o
 obj-y += drv_callback.o
 obj-y += radio_feedback.o

@@ -108,6 +108,7 @@
 #include <mach/rpm-regulator.h>
 #include <mach/restart.h>
 #include <mach/cable_detect.h>
+#include <linux/msm_tsens.h>
 
 #include "board-shooter_u.h"
 #include "devices.h"
@@ -140,7 +141,6 @@
   int id_set_two_phase_freq(int cpufreq);
  #endif
 #endif
-
 int __init pyd_init_panel(struct resource *res, size_t size);
 
 enum {
@@ -2994,9 +2994,11 @@ static struct platform_device *early_devices[] __initdata = {
 #endif
 };
 
-static struct platform_device msm_tsens_device = {
-	.name   = "tsens-tm",
-	.id = -1,
+static struct tsens_platform_data pyr_tsens_pdata = {
+                .tsens_factor 			= 1000,
+                .hw_type                = MSM_8660,
+                .tsens_num_sensor       = 1,
+                .slope                  = 702,
 };
 
 #ifdef CONFIG_SENSORS_MSM_ADC
@@ -3710,7 +3712,6 @@ static struct platform_device *shooter_u_devices[] __initdata = {
 	&msm_device_rng,
 #endif
 
-	&msm_tsens_device,
 	&msm_rpm_device,
 	&cable_detect_device,
 #ifdef CONFIG_BT
@@ -6439,6 +6440,9 @@ static void __init msm8x60_init(struct msm_board_data *board_data)
 
 	raw_speed_bin = readl(QFPROM_SPEED_BIN_ADDR);
 	speed_bin = raw_speed_bin & 0xF;
+
+	msm_tsens_early_init(&pyr_tsens_pdata);
+
 	/*
 	 * Initialize RPM first as other drivers and devices may need
 	 * it for their initialization.
@@ -6516,8 +6520,8 @@ static void __init msm8x60_init(struct msm_board_data *board_data)
 
 #ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	set_two_phase_freq(1134000);
-	 #ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
-	    id_set_two_phase_freq(1134000);
+	#ifdef CONFIG_CPU_FREQ_GOV_INTELLIDEMAND
+	 id_set_two_phase_freq(1134000);
 	#endif
 #endif
 

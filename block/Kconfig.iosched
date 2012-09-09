@@ -1,4 +1,4 @@
-if BLOCK
+#if BLOCK
 
 menu "IO Schedulers"
 
@@ -42,7 +42,7 @@ config CFQ_GROUP_IOSCHED
 	default n
 	---help---
 	  Enable group IO scheduling in CFQ.
-	  
+
 config IOSCHED_VR
 	tristate "V(R) I/O scheduler"
 	default n
@@ -65,7 +65,7 @@ choice
 
 	config DEFAULT_NOOP
 		bool "No-op"
-		
+
 	config DEFAULT_VR
 		bool "V(R)" if IOSCHED_VR=y
 endchoice
@@ -78,4 +78,4 @@ config DEFAULT_IOSCHED
 	default "vr" if DEFAULT_VR
 endmenu
 
-endif
+#endif
