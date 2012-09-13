@@ -335,9 +335,9 @@ void kernel_restart(char *cmd)
 {
 	kernel_restart_prepare(cmd);
 	if (!cmd)
-		printk(KERN_EMERG "[K] %s(parent:%s): Restarting system.\n", current->comm, current->parent->comm);
+		printk(KERN_EMERG "Restarting system.\n");
 	else
-		printk(KERN_EMERG "[K] %s(parent:%s): Restarting system with command '%s'.\n", current->comm, current->parent->comm, cmd);
+		printk(KERN_EMERG "Restarting system with command '%s'.\n", cmd);
 	kmsg_dump(KMSG_DUMP_RESTART);
 	machine_restart(cmd);
 }
@@ -360,7 +360,7 @@ void kernel_halt(void)
 {
 	kernel_shutdown_prepare(SYSTEM_HALT);
 	syscore_shutdown();
-	printk(KERN_EMERG "[K] System halted.\n");
+	printk(KERN_EMERG "System halted.\n");
 	kmsg_dump(KMSG_DUMP_HALT);
 	machine_halt();
 }
@@ -379,7 +379,7 @@ void kernel_power_off(void)
 		pm_power_off_prepare();
 	disable_nonboot_cpus();
 	syscore_shutdown();
-	printk(KERN_EMERG "[K] Power down.\n");
+	printk(KERN_EMERG "Power down.\n");
 	kmsg_dump(KMSG_DUMP_POWEROFF);
 	machine_power_off();
 }
@@ -400,6 +400,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 {
 	char buffer[256];
 	int ret = 0;
+
 	/* We only trust the superuser with rebooting the system. */
 	if (!capable(CAP_SYS_BOOT))
 		return -EPERM;

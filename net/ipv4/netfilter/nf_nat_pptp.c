@@ -52,14 +52,6 @@ static void pptp_nat_expected(struct nf_conn *ct,
 	ct_pptp_info = &nfct_help(master)->help.ct_pptp_info;
 	nat_pptp_info = &nfct_nat(master)->help.nat_pptp_info;
 
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(ct_pptp_info) || (!ct_pptp_info))
-		printk(KERN_ERR "[NET] ct_pptp_info is NULL in %s!\n", __func__);
-
-	if (IS_ERR(nat_pptp_info) || (!nat_pptp_info))
-		printk(KERN_ERR "[NET] nat_pptp_info is NULL in %s!\n", __func__);
-#endif
-
 	/* And here goes the grand finale of corrosion... */
 	if (exp->dir == IP_CT_DIR_ORIGINAL) {
 		pr_debug("we are PNS->PAC\n");
@@ -134,14 +126,6 @@ pptp_outbound_pkt(struct sk_buff *skb,
 	ct_pptp_info  = &nfct_help(ct)->help.ct_pptp_info;
 	nat_pptp_info = &nfct_nat(ct)->help.nat_pptp_info;
 
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(ct_pptp_info) || (!ct_pptp_info))
-		printk(KERN_ERR "[NET] ct_pptp_info is NULL in %s!\n", __func__);
-
-	if (IS_ERR(nat_pptp_info) || (!nat_pptp_info))
-		printk(KERN_ERR "[NET] nat_pptp_info is NULL in %s!\n", __func__);
-#endif
-
 	new_callid = ct_pptp_info->pns_call_id;
 
 	switch (msg = ntohs(ctlh->messageType)) {
@@ -210,14 +194,6 @@ pptp_exp_gre(struct nf_conntrack_expect *expect_orig,
 
 	ct_pptp_info  = &nfct_help(ct)->help.ct_pptp_info;
 	nat_pptp_info = &nfct_nat(ct)->help.nat_pptp_info;
-
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(ct_pptp_info) || (!ct_pptp_info))
-		printk(KERN_ERR "[NET] ct_pptp_info is NULL in %s!\n", __func__);
-
-	if (IS_ERR(nat_pptp_info) || (!nat_pptp_info))
-		printk(KERN_ERR "[NET] nat_pptp_info is NULL in %s!\n", __func__);
-#endif
 
 	/* save original PAC call ID in nat_info */
 	nat_pptp_info->pac_call_id = ct_pptp_info->pac_call_id;
@@ -306,16 +282,16 @@ static int __init nf_nat_helper_pptp_init(void)
 	nf_nat_need_gre();
 
 	BUG_ON(nf_nat_pptp_hook_outbound != NULL);
-	rcu_assign_pointer_nonull(nf_nat_pptp_hook_outbound, pptp_outbound_pkt);
+	rcu_assign_pointer(nf_nat_pptp_hook_outbound, pptp_outbound_pkt);
 
 	BUG_ON(nf_nat_pptp_hook_inbound != NULL);
-	rcu_assign_pointer_nonull(nf_nat_pptp_hook_inbound, pptp_inbound_pkt);
+	rcu_assign_pointer(nf_nat_pptp_hook_inbound, pptp_inbound_pkt);
 
 	BUG_ON(nf_nat_pptp_hook_exp_gre != NULL);
-	rcu_assign_pointer_nonull(nf_nat_pptp_hook_exp_gre, pptp_exp_gre);
+	rcu_assign_pointer(nf_nat_pptp_hook_exp_gre, pptp_exp_gre);
 
 	BUG_ON(nf_nat_pptp_hook_expectfn != NULL);
-	rcu_assign_pointer_nonull(nf_nat_pptp_hook_expectfn, pptp_nat_expected);
+	rcu_assign_pointer(nf_nat_pptp_hook_expectfn, pptp_nat_expected);
 	return 0;
 }
 

@@ -706,15 +706,9 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
 			if (!blk_queue_full(q, is_sync)) {
 				ioc_set_batching(q, ioc);
 				blk_set_queue_full(q, is_sync);
-			}
-
-			else {
-/* Modified by Memory, Studio Software for Zimmer */
-#if defined(CONFIG_ZIMMER)
-                if (may_queue != ELV_MQUEUE_MUST && !ioc_batching(q, ioc) && (!(bio->bi_rw & REQ_SWAPIN_DMPG))) {
-#else
-                if (may_queue != ELV_MQUEUE_MUST && !ioc_batching(q, ioc)) {
-#endif
+			} else {
+				if (may_queue != ELV_MQUEUE_MUST
+						&& !ioc_batching(q, ioc)) {
 					/*
 					 * The queue is full and the allocating
 					 * process is not a "batcher", and not
@@ -732,12 +726,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
 	 * limit of requests, otherwise we could have thousands of requests
 	 * allocated with any setting of ->nr_requests
 	 */
-	/* Modified by Memory, Studio Software for Zimmer */
-#if defined(CONFIG_ZIMMER)
-    if ((rl->count[is_sync] >= (3 * q->nr_requests / 2)) && (!(bio->bi_rw & REQ_SWAPIN_DMPG)))
-#else
-    if ((rl->count[is_sync] >= (3 * q->nr_requests / 2)))
-#endif
+	if (rl->count[is_sync] >= (3 * q->nr_requests / 2))
 		goto out;
 
 	rl->count[is_sync]++;
@@ -1209,12 +1198,6 @@ void init_request_from_bio(struct request *req, struct bio *bio)
 	if (bio->bi_rw & REQ_RAHEAD)
 		req->cmd_flags |= REQ_FAILFAST_MASK;
 
-/* Modified by Memory, Studio Software for Zimmer */
-#if defined(CONFIG_ZIMMER)
-	if (bio->bi_rw & REQ_SWAPIN_DMPG)
-		req->cmd_flags |= (REQ_SWAPIN_DMPG | REQ_NOMERGE);
-#endif
-
 	req->errors = 0;
 	req->__sector = bio->bi_sector;
 	req->ioprio = bio_prio(bio);
@@ -1235,12 +1218,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
 	 */
 	blk_queue_bounce(q, &bio);
 
-/* Modified by Memory, Studio Software for Zimmer */
-#if defined(CONFIG_ZIMMER)
-	if (bio->bi_rw & (REQ_FLUSH | REQ_FUA) || bio->bi_rw & REQ_SWAPIN_DMPG) {
-#else
 	if (bio->bi_rw & (REQ_FLUSH | REQ_FUA)) {
-#endif
 		spin_lock_irq(q->queue_lock);
 		where = ELEVATOR_INSERT_FLUSH;
 		goto get_rq;
@@ -1457,12 +1435,9 @@ static inline void __generic_make_request(struct bio *bio)
 {
 	struct request_queue *q;
 	sector_t old_sector;
-	int ret, nr_sectors = 0;
+	int ret, nr_sectors = bio_sectors(bio);
 	dev_t old_dev;
 	int err = -EIO;
-
-	if (bio)
-		nr_sectors = bio_sectors(bio);
 
 	might_sleep();
 

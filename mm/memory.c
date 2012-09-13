@@ -1516,7 +1516,7 @@ split_fallthrough:
 	if (flags & FOLL_GET)
 		get_page_foll(page);
 	if (flags & FOLL_TOUCH) {
-		if (page && (flags & FOLL_WRITE) &&
+		if ((flags & FOLL_WRITE) &&
 		    !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
 		/*

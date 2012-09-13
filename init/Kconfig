@@ -901,40 +901,19 @@ source "usr/Kconfig"
 
 endif
 
-choice
-  prompt "Optimization level (-Os, -O2, -O3)"
-  default CC_OPTIMIZE_DEFAULT
-
 config CC_OPTIMIZE_FOR_SIZE
-	bool "Use -Os"
+	bool "Optimize for size"
 	help
-	  Enabling this option will pass "-Os" instead of "-O2" or "-O3" to gcc
-	  resulting in a smaller, less optimized kernel.
+	  Enabling this option will pass "-Os" instead of "-O2" to gcc
+	  resulting in a smaller kernel.
 
-config CC_OPTIMIZE_DEFAULT
-	bool "Use -O2"
-	help
-	  Enabling this option will pass "-O2" instead of "-Os" or "-O3" to gcc
-	  resulting in a normal sized kernel, slightly optimized.
-
-config CC_OPTIMIZE_ALOT
-	bool "Use -O3"
-	help
-	  Enabling this option will pass "-O3" instead of "-Os" or "-O2" to gcc
-	  resulting in a large sized kernel, fully optimized.
-endchoice
+	  If unsure, say Y.
 
 config SYSCTL
 	bool
 
 config ANON_INODES
 	bool
-
-config PANIC_TIMEOUT
-	int "Default panic timeout"
-	default 0
-	help
-	  Set default panic timeout.
 
 menuconfig EXPERT
 	bool "Configure standard kernel features (expert users)"
@@ -1102,15 +1081,6 @@ config SHMEM
 	  option replaces shmem and tmpfs with the much simpler ramfs code,
 	  which may be appropriate on small systems without swap.
 
-config ASHMEM
-	bool "Enable the Anonymous Shared Memory Subsystem"
-	default n
-	depends on SHMEM || TINY_SHMEM
-	help
-	  The ashmem subsystem is a new shared memory allocator, similar to
-	  POSIX SHM but with different behavior and sporting a simpler
-	  file-based API.
-
 config AIO
 	bool "Enable AIO support" if EXPERT
 	default y
@@ -1249,7 +1219,6 @@ config SLAB
 	  per cpu and per node queues.
 
 config SLUB
-	depends on BROKEN || NUMA || !DISCONTIGMEM
 	bool "SLUB (Unqueued Allocator)"
 	help
 	   SLUB is a slab allocator that minimizes cache line usage

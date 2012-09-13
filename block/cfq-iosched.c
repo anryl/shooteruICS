@@ -1283,7 +1283,6 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
 
 	service_tree = service_tree_for(cfqq->cfqg, cfqq_prio(cfqq),
 						cfqq_type(cfqq));
-	BUG_ON(service_tree == NULL);
 	if (cfq_class_idle(cfqq)) {
 		rb_key = CFQ_IDLE_DELAY;
 		parent = rb_last(&service_tree->rb);
@@ -1503,11 +1502,16 @@ static void cfq_add_rq_rb(struct request *rq)
 {
 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
 	struct cfq_data *cfqd = cfqq->cfqd;
-	struct request *prev;
+	struct request *__alias, *prev;
 
 	cfqq->queued[rq_is_sync(rq)]++;
 
-	elv_rb_add(&cfqq->sort_list, rq);
+	/*
+	 * looks a little odd, but the first insert might return an alias.
+	 * if that happens, put the alias on the dispatch list
+	 */
+	while ((__alias = elv_rb_add(&cfqq->sort_list, rq)) != NULL)
+		cfq_dispatch_insert(cfqd->queue, __alias);
 
 	if (!cfq_cfqq_on_rr(cfqq))
 		cfq_add_cfqq_rr(cfqd, cfqq);
@@ -2163,10 +2167,7 @@ static enum wl_type_t cfq_choose_wl(struct cfq_data *cfqd,
 
 	for (i = 0; i <= SYNC_WORKLOAD; ++i) {
 		/* select the one with lowest rb_key */
-		struct cfq_rb_root *service_tree;
-		service_tree = service_tree_for(cfqg, prio, i);
-		BUG_ON(service_tree == NULL);
-		queue = cfq_rb_first(service_tree);
+		queue = cfq_rb_first(service_tree_for(cfqg, prio, i));
 		if (queue &&
 		    (!key_valid || time_before(queue->rb_key, lowest_key))) {
 			lowest_key = queue->rb_key;
@@ -2206,7 +2207,6 @@ static void choose_service_tree(struct cfq_data *cfqd, struct cfq_group *cfqg)
 	 * expiration time
 	 */
 	st = service_tree_for(cfqg, cfqd->serving_prio, cfqd->serving_type);
-	BUG_ON(st == NULL);
 	count = st->count;
 
 	/*
@@ -2274,7 +2274,7 @@ static struct cfq_group *cfq_get_next_cfqg(struct cfq_data *cfqd)
 static void cfq_choose_cfqg(struct cfq_data *cfqd)
 {
 	struct cfq_group *cfqg = cfq_get_next_cfqg(cfqd);
-	BUG_ON(cfqg == NULL);
+
 	cfqd->serving_group = cfqg;
 
 	/* Restore the workload type data */

@@ -37,7 +37,6 @@
 #include <asm/string.h>
 
 #define PPP_VERSION	"2.4.2"
-#define MODULE_NAME "[PPP]" /* HTC version */
 
 #define OBUFSIZE	4096
 
@@ -199,9 +198,6 @@ ppp_asynctty_open(struct tty_struct *tty)
 
 	tty->disc_data = ap;
 	tty->receive_room = 65536;
-
-	printk(KERN_INFO MODULE_NAME "%s %s\n", __FUNCTION__, ap->tty->name);
-
 	return 0;
 
  out_free:
@@ -230,8 +226,6 @@ ppp_asynctty_close(struct tty_struct *tty)
 	if (!ap)
 		return;
 
-	printk(KERN_INFO MODULE_NAME "%s %s\n", __FUNCTION__, ap->tty->name);
-
 	/*
 	 * We have now ensured that nobody can start using ap from now
 	 * on, but we have to wait for all existing users to finish.
@@ -239,12 +233,8 @@ ppp_asynctty_close(struct tty_struct *tty)
 	 * our channel ops (i.e. ppp_async_send/ioctl) are in progress
 	 * by the time it returns.
 	 */
-	printk(KERN_INFO MODULE_NAME "semaphor down+ refcnt=%d\n", atomic_read(&ap->refcnt));
 	if (!atomic_dec_and_test(&ap->refcnt))
-		if (down_timeout(&ap->dead_sem, msecs_to_jiffies(1000)) != 0)
-			printk(KERN_INFO MODULE_NAME "down_timeout\n");
-	printk(KERN_INFO MODULE_NAME "semaphor down- refcnt=%d\n", atomic_read(&ap->refcnt));
-
+		down(&ap->dead_sem);
 	tasklet_kill(&ap->tsk);
 
 	ppp_unregister_channel(&ap->chan);
@@ -808,14 +798,6 @@ process_input_packet(struct asyncppp *ap)
 			goto err;
 		p = skb_pull(skb, 2);
 	}
-
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(p) || (!p)) {
-		printk(KERN_ERR "[PPP] p is NULL in %s!\n", __func__);
-		goto err;
-    }
-#endif
-
 	proto = p[0];
 	if (proto & 1) {
 		/* protocol is compressed */

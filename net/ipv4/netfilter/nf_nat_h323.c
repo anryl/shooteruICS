@@ -105,11 +105,6 @@ static int set_sig_addr(struct sk_buff *skb, struct nf_conn *ct,
 	__be16 port;
 	union nf_inet_addr addr;
 
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(info) || (!info))
-		printk(KERN_ERR "[NET] info is NULL in %s!\n", __func__);
-#endif
-
 	for (i = 0; i < count; i++) {
 		if (get_h225_addr(ct, *data, &taddr[i], &addr, &port)) {
 			if (addr.ip == ct->tuplehash[dir].tuple.src.u3.ip &&
@@ -346,11 +341,6 @@ static int nat_h245(struct sk_buff *skb, struct nf_conn *ct,
 	int dir = CTINFO2DIR(ctinfo);
 	u_int16_t nated_port = ntohs(port);
 
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(info) || (!info))
-		printk(KERN_ERR "[NET] info is NULL in %s!\n", __func__);
-#endif
-
 	/* Set expectations for NAT */
 	exp->saved_proto.tcp.port = exp->tuple.dst.u.tcp.port;
 	exp->expectfn = nf_nat_follow_master;
@@ -441,11 +431,6 @@ static int nat_q931(struct sk_buff *skb, struct nf_conn *ct,
 	int dir = CTINFO2DIR(ctinfo);
 	u_int16_t nated_port = ntohs(port);
 	union nf_inet_addr addr;
-
-#ifdef CONFIG_HTC_NETWORK_MODIFY
-	if (IS_ERR(info) || (!info))
-		printk(KERN_ERR "[NET] info is NULL in %s!\n", __func__);
-#endif
 
 	/* Set expectations for NAT */
 	exp->saved_proto.tcp.port = exp->tuple.dst.u.tcp.port;
@@ -596,15 +581,15 @@ static int __init init(void)
 	BUG_ON(nat_callforwarding_hook != NULL);
 	BUG_ON(nat_q931_hook != NULL);
 
-	rcu_assign_pointer_nonull(set_h245_addr_hook, set_h245_addr);
-	rcu_assign_pointer_nonull(set_h225_addr_hook, set_h225_addr);
-	rcu_assign_pointer_nonull(set_sig_addr_hook, set_sig_addr);
-	rcu_assign_pointer_nonull(set_ras_addr_hook, set_ras_addr);
-	rcu_assign_pointer_nonull(nat_rtp_rtcp_hook, nat_rtp_rtcp);
-	rcu_assign_pointer_nonull(nat_t120_hook, nat_t120);
-	rcu_assign_pointer_nonull(nat_h245_hook, nat_h245);
-	rcu_assign_pointer_nonull(nat_callforwarding_hook, nat_callforwarding);
-	rcu_assign_pointer_nonull(nat_q931_hook, nat_q931);
+	rcu_assign_pointer(set_h245_addr_hook, set_h245_addr);
+	rcu_assign_pointer(set_h225_addr_hook, set_h225_addr);
+	rcu_assign_pointer(set_sig_addr_hook, set_sig_addr);
+	rcu_assign_pointer(set_ras_addr_hook, set_ras_addr);
+	rcu_assign_pointer(nat_rtp_rtcp_hook, nat_rtp_rtcp);
+	rcu_assign_pointer(nat_t120_hook, nat_t120);
+	rcu_assign_pointer(nat_h245_hook, nat_h245);
+	rcu_assign_pointer(nat_callforwarding_hook, nat_callforwarding);
+	rcu_assign_pointer(nat_q931_hook, nat_q931);
 	return 0;
 }
 

@@ -2559,7 +2559,7 @@ static int move_module(struct module *mod, struct load_info *info)
 	 * after the module is initialized.
 	 */
 	kmemleak_ignore(ptr);
-	if (!ptr) {
+	if (!ptr && mod->init_size) {
 		module_free(mod, mod->module_core);
 		return -ENOMEM;
 	}

@@ -8,76 +8,57 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 #include <linux/module.h>
-#include <linux/slab.h>
 #include <linux/spinlock.h>
-#include <mach/gpiomux.h>
+#include "gpiomux.h"
 
-struct msm_gpiomux_rec {
-	struct gpiomux_setting *sets[GPIOMUX_NSETTINGS];
-	int ref;
-};
 static DEFINE_SPINLOCK(gpiomux_lock);
-static struct msm_gpiomux_rec *msm_gpiomux_recs;
-static struct gpiomux_setting *msm_gpiomux_sets;
-static unsigned msm_gpiomux_ngpio;
 
-int msm_gpiomux_write(unsigned gpio, enum msm_gpiomux_setting which,
-	struct gpiomux_setting *setting, struct gpiomux_setting *old_setting)
+int msm_gpiomux_write(unsigned gpio,
+		      gpiomux_config_t active,
+		      gpiomux_config_t suspended)
 {
-	struct msm_gpiomux_rec *rec = msm_gpiomux_recs + gpio;
-	unsigned set_slot = gpio * GPIOMUX_NSETTINGS + which;
+	struct msm_gpiomux_config *cfg = msm_gpiomux_configs + gpio;
 	unsigned long irq_flags;
-	struct gpiomux_setting *new_set;
-	int status = 0;
+	gpiomux_config_t setting;
 
-	if (!msm_gpiomux_recs)
-		return -EFAULT;
-
-	if (gpio >= msm_gpiomux_ngpio)
+	if (gpio >= GPIOMUX_NGPIOS)
 		return -EINVAL;
 
 	spin_lock_irqsave(&gpiomux_lock, irq_flags);
 
-	if (old_setting) {
-		if (rec->sets[which] == NULL)
-			status = 1;
-		else
-			*old_setting =  *(rec->sets[which]);
-	}
+	if (active & GPIOMUX_VALID)
+		cfg->active = active;
 
-	if (setting) {
-		msm_gpiomux_sets[set_slot] = *setting;
-		rec->sets[which] = &msm_gpiomux_sets[set_slot];
-	} else {
-		rec->sets[which] = NULL;
-	}
+	if (suspended & GPIOMUX_VALID)
+		cfg->suspended = suspended;
 
-	new_set = rec->ref ? rec->sets[GPIOMUX_ACTIVE] :
-		rec->sets[GPIOMUX_SUSPENDED];
-	if (new_set)
-		__msm_gpiomux_write(gpio, *new_set);
+	setting = cfg->ref ? active : suspended;
+	if (setting & GPIOMUX_VALID)
+		__msm_gpiomux_write(gpio, setting);
 
 	spin_unlock_irqrestore(&gpiomux_lock, irq_flags);
-	return status;
+	return 0;
 }
 EXPORT_SYMBOL(msm_gpiomux_write);
 
 int msm_gpiomux_get(unsigned gpio)
 {
-	struct msm_gpiomux_rec *rec = msm_gpiomux_recs + gpio;
+	struct msm_gpiomux_config *cfg = msm_gpiomux_configs + gpio;
 	unsigned long irq_flags;
 
-	if (!msm_gpiomux_recs)
-		return -EFAULT;
-
-	if (gpio >= msm_gpiomux_ngpio)
+	if (gpio >= GPIOMUX_NGPIOS)
 		return -EINVAL;
 
 	spin_lock_irqsave(&gpiomux_lock, irq_flags);
-	if (rec->ref++ == 0 && rec->sets[GPIOMUX_ACTIVE])
-		__msm_gpiomux_write(gpio, *rec->sets[GPIOMUX_ACTIVE]);
+	if (cfg->ref++ == 0 && cfg->active & GPIOMUX_VALID)
+		__msm_gpiomux_write(gpio, cfg->active);
 	spin_unlock_irqrestore(&gpiomux_lock, irq_flags);
 	return 0;
 }
@@ -85,66 +66,31 @@ EXPORT_SYMBOL(msm_gpiomux_get);
 
 int msm_gpiomux_put(unsigned gpio)
 {
-	struct msm_gpiomux_rec *rec = msm_gpiomux_recs + gpio;
+	struct msm_gpiomux_config *cfg = msm_gpiomux_configs + gpio;
 	unsigned long irq_flags;
 
-	if (!msm_gpiomux_recs)
-		return -EFAULT;
-
-	if (gpio >= msm_gpiomux_ngpio)
+	if (gpio >= GPIOMUX_NGPIOS)
 		return -EINVAL;
 
 	spin_lock_irqsave(&gpiomux_lock, irq_flags);
-	BUG_ON(rec->ref == 0);
-	if (--rec->ref == 0 && rec->sets[GPIOMUX_SUSPENDED])
-		__msm_gpiomux_write(gpio, *rec->sets[GPIOMUX_SUSPENDED]);
+	BUG_ON(cfg->ref == 0);
+	if (--cfg->ref == 0 && cfg->suspended & GPIOMUX_VALID)
+		__msm_gpiomux_write(gpio, cfg->suspended);
 	spin_unlock_irqrestore(&gpiomux_lock, irq_flags);
 	return 0;
 }
 EXPORT_SYMBOL(msm_gpiomux_put);
 
-int msm_gpiomux_init(size_t ngpio)
+static int __init gpiomux_init(void)
 {
-	if (!ngpio)
-		return -EINVAL;
+	unsigned n;
 
-	if (msm_gpiomux_recs)
-		return -EPERM;
-
-	msm_gpiomux_recs = kzalloc(sizeof(struct msm_gpiomux_rec) * ngpio,
-				   GFP_KERNEL);
-	if (!msm_gpiomux_recs)
-		return -ENOMEM;
-
-	/* There is no need to zero this memory, as clients will be blindly
-	 * installing settings on top of it.
-	 */
-	msm_gpiomux_sets = kmalloc(sizeof(struct gpiomux_setting) * ngpio *
-		GPIOMUX_NSETTINGS, GFP_KERNEL);
-	if (!msm_gpiomux_sets) {
-		kfree(msm_gpiomux_recs);
-		msm_gpiomux_recs = NULL;
-		return -ENOMEM;
+	for (n = 0; n < GPIOMUX_NGPIOS; ++n) {
+		msm_gpiomux_configs[n].ref = 0;
+		if (!(msm_gpiomux_configs[n].suspended & GPIOMUX_VALID))
+			continue;
+		__msm_gpiomux_write(n, msm_gpiomux_configs[n].suspended);
 	}
-
-	msm_gpiomux_ngpio = ngpio;
-
 	return 0;
 }
-EXPORT_SYMBOL(msm_gpiomux_init);
-
-void msm_gpiomux_install(struct msm_gpiomux_config *configs, unsigned nconfigs)
-{
-	unsigned c, s;
-	int rc;
-
-	for (c = 0; c < nconfigs; ++c) {
-		for (s = 0; s < GPIOMUX_NSETTINGS; ++s) {
-			rc = msm_gpiomux_write(configs[c].gpio, s,
-				configs[c].settings[s], NULL);
-			if (rc)
-				pr_err("%s: write failure: %d\n", __func__, rc);
-		}
-	}
-}
-EXPORT_SYMBOL(msm_gpiomux_install);
+postcore_initcall(gpiomux_init);
