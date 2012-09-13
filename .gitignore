@@ -32,6 +32,10 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
+*.~
+*.rej
+*.cool
+*.org
 
 #
 # Top-level generic files
@@ -50,7 +54,7 @@ modules.builtin
 #
 !.gitignore
 !.mailmap
-
+!.config
 #
 # Generated include files
 #

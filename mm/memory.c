@@ -1516,7 +1516,7 @@ split_fallthrough:
 	if (flags & FOLL_GET)
 		get_page_foll(page);
 	if (flags & FOLL_TOUCH) {
-		if ((flags & FOLL_WRITE) &&
+		if (page && (flags & FOLL_WRITE) &&
 		    !pte_dirty(pte) && !PageDirty(page))
 			set_page_dirty(page);
 		/*
@@ -3788,6 +3788,7 @@ static int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
 				break;
 			bytes = ret;
 		} else {
+		 
 			bytes = len;
 			offset = addr & (PAGE_SIZE-1);
 			if (bytes > PAGE_SIZE-offset)
